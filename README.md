@@ -1,0 +1,180 @@
+# evoPLM
+
+Code accompanying the evoPLM paper: a prefix-LM protein language model for SARS-CoV-2 spike/RBD
+evolution, trained with an optional tree-aware conditioning signal (phylogenetic features encoded
+as discrete tokens).
+
+This repository contains the full pipeline: raw genome download and QC, phylogenetic-tree feature
+extraction, ancestor→descendant trajectory construction, model training, sequence generation,
+deep-mutational-scanning (DMS) validation, and figure generation.
+
+## Repository layout
+
+```
+configs/                  Tokenizer config (protein_tree_tokenizer.json)
+src/evoplm/                Installable package: tokenizer (ProteinTreeTokenizer)
+scripts/
+  preprocessing/            01-11 Python steps: NCBI download -> QC -> Nextclade -> dedup ->
+                             RBD extraction -> splits -> UShER tree features -> trajectory pairs
+                             (launchers for these live under cluster/slurm/preprocessing/)
+  train_prefix_lm.py        Prefix-LM training (rbd/spike x seq-only/tree-aware)
+  generate_sequences.py     Stratified-sample generation + mutation-recovery metrics
+  evaluate_teacher_forcing.py  Teacher-forced conditioning-dependence evaluation
+  diagnose_conditioning.py  Ad-hoc conditioning sanity check (no SLURM launcher; run interactively)
+  dms/                      DMS validation: table prep, mutation-probability inference,
+                             enrichment/correlation metrics, plots
+  figures/                  Generation-metric, hotspot, and structure-mapping figures
+cluster/slurm/
+  preprocessing/             Launchers for scripts/preprocessing/01-11 (same numbering)
+  train/                    train_{rbd,spike}_{seqonly,treeaware}.sbatch
+  evaluate/                 generate_{rbd,spike}_{seqonly,treeaware}.sbatch (sampled generation)
+                             evaluate_{rbd,spike}_{seqonly,treeaware}.sbatch (teacher forcing)
+  dms/                      infer_mutation_probabilities.sh, evaluate_dms.sh,
+                             plot_dms_comparison.sh, plot_probability_calibration.sh,
+                             plot_weighted_enrichment.sh (see "DMS validation" below)
+  figures/                  plot_generation_metrics.sh, plot_mutation_hotspots.sh,
+                             plot_conditioning_context.sh, plot_observed_vs_predicted_frequency.sh,
+                             map_hotspots_to_structure_{rbd,spike}_{pred,true}.sh
+data/
+  dms/                      Raw DMS assay scores (MaveDB)
+  pdb/                      Reference structure (6VSB) for hotspot-to-structure mapping
+  trajectories/              NOT INCLUDED — see "Data" below
+results/
+  generation/split1/        Sampled generation outputs + hotspot-to-structure mappings
+  dms/                       DMS validation tables/metrics
+models/                      NOT INCLUDED — see "Pretrained models" below
+```
+
+## Environment setup
+
+Two conda environments are needed.
+
+**Main environment** (training, generation, evaluation, DMS validation, most figures):
+
+```bash
+conda env create -f environment.yml
+conda activate evoplm-paper
+```
+
+This installs the `evoplm` package itself (editable, from `src/`) via the `-e .` entry in
+`environment.yml` / `pyproject.toml`.
+
+**Tree-feature environment** (`evoplm-paper-bte`, used only by
+`cluster/slurm/preprocessing/10_add_usher_tree_to_splits.sh` and
+`cluster/slurm/preprocessing/11_gen_trajectories_tree_aware.sh`): requires UShER / `bte`
+(big-tree-explorer) Python bindings for mutation-annotated-tree (MAT) parsing.
+
+```bash
+conda env create -f environment_bte.yml
+```
+
+`environment.yml` and `environment_bte.yml` are pinned to exactly what `conda list -n evolm` /
+`conda list -n evolm_bte` reported on the original cluster environments. `scikit-learn`,
+`umap-learn`, and `jupyterlab` are also present in `evolm` but are not included here since no
+script in this repo imports them (they appear to have been used for exploratory notebooks only);
+add them (`scikit-learn=1.7.2`, `umap-learn=0.5.11`, `jupyterlab=4.4.10`) if you need that parity.
+
+## Reproducing the pipeline
+
+### 1. Data preprocessing (`cluster/slurm/preprocessing/`, python in `scripts/preprocessing/`)
+
+Run in order (01 → 11). `submit_nextclade_pipeline.sh` orchestrates the sharded Nextclade step
+(03) and its merge (04) for you; run the others directly with `sbatch`.
+
+| # | Script | What it does |
+|---|---|---|
+| 01 | `download_ncbi.sh` | Download SARS-CoV-2 genomes from NCBI Datasets |
+| 02 | `prefilter_split.sh` | Keep near-complete genomes by length, shard for Nextclade |
+| 03 | `nextclade_array.sh` | Run Nextclade per shard (submit via `submit_nextclade_pipeline.sh`) |
+| 04 | `merge_nextclade.sh` | Merge per-shard Nextclade TSVs and spike FASTAs |
+| 05 | `augment_nextclade.{sh,py}` | Join Nextclade output with NCBI accession/date/geography metadata |
+| 06 | `filter_metadata.{sh,py}` | QC filters; writes `spike.parquet` / `.tsv` / `.fasta` |
+| 07 | `rm_duplicates.{sh,py}` | Collapse duplicates, add `dup_count` |
+| 08 | `extract_rbd.{sh,py}` | Derive RBD sequence from spike |
+| 09 | `splits_with_cutoff.{sh,py}` | Build split1/split2 train-test partitions, exclude recombinants |
+| 10 | `add_usher_tree_to_splits.{sh,py}` | Map accessions to UShER MAT leaves, compute tree features |
+| 11 | `gen_trajectories_tree_aware.{sh,py}` | Build ancestor→descendant sequence pairs for train/eval |
+
+Step 11 is what produces `data/trajectories/*.parquet` — **not included in this repo** (see
+"Data" below); regenerate them via the pipeline, or drop in existing copies.
+
+### 2. Training
+
+```bash
+sbatch cluster/slurm/train/train_rbd_treeaware.sbatch      # and rbd_seqonly / spike_seqonly / spike_treeaware
+```
+
+Each launcher calls `scripts/train_prefix_lm.py --task {rbd,spike} --split split1 [--use_tree_tokens] ...`
+and writes to `models/{seqonly,treeaware}/{task}/{split}/maxT.../final`.
+
+### 3. Generation & evaluation
+
+```bash
+sbatch cluster/slurm/evaluate/generate_rbd_treeaware.sbatch   # sampled generation + mutation-recovery metrics
+sbatch cluster/slurm/evaluate/evaluate_rbd_seqonly.sbatch      # teacher-forced conditioning-dependence eval
+```
+
+`generate_*.sbatch` calls `scripts/generate_sequences.py`, producing
+`results/generation/split1/{rbd,spike}_{seqonly,treeaware}_sample2000.{csv,json}`.
+`evaluate_*.sbatch` calls `scripts/evaluate_teacher_forcing.py`, producing
+`results/teacher_forcing/split1/...`.
+
+`scripts/diagnose_conditioning.py` is an additional ad-hoc sanity check (compares generation/loss
+with the conditioning prefix visible vs. masked) — run it interactively; no SLURM launcher is
+provided since it isn't tied to a specific reported result.
+
+### 4. DMS validation (`cluster/slurm/dms/`, python in `scripts/dms/`)
+
+Pipeline: `prepare_dms_table.py` (parse raw MaveDB scores into `results/dms/<dataset>_table.csv`)
+→ `infer_mutation_probabilities.py` (per-site mutation probabilities from a trained checkpoint,
+launcher: `infer_mutation_probabilities.sh`) → `evaluate_dms.py` (merge + correlation/enrichment
+metrics, launcher: `evaluate_dms.sh`) → `plot_dms_comparison.sh` / `plot_probability_calibration.sh`
+/ `plot_weighted_enrichment.sh`.
+
+`evaluate_dms.sh` stages the two `*_table.csv` files into `results/dms/dms_scores/` before running
+(the script globs every `*.csv` in `--dms_scores_dir`, so it can't point directly at the mixed
+`results/dms/` root) and writes one subdirectory per dataset directly under `results/dms/`
+(`results/dms/urn_mavedb_00000670-a-1/`, `.../000671-a-1/`), each with its own
+`{seqonly,treeaware}_merged_probs_dms.csv` / `_top3_mutations.csv` / `metrics_summary.csv`, plus a
+combined `results/dms/metrics_summary_all_datasets.csv`.
+
+`plot_dms_comparison.sh` calls `plot_dms_comparison.py` once per dataset subdirectory (the script
+itself expects a flat metrics dir, so it can't be pointed at the shared root the way the original
+working-repo launcher did — that combination looks like it wouldn't actually have worked as
+configured there either). `plot_probability_calibration.sh` walks all dataset subdirectories
+itself, so it points at `results/dms` directly.
+
+`prepare_dms_table.py` was run once per included MaveDB dataset ID (670 and 671).
+
+### 5. Figures (`cluster/slurm/figures/`, python in `scripts/figures/`)
+
+`plot_generation_metrics.py`, `plot_mutation_hotspots.py`, `plot_observed_vs_predicted_frequency.py`
+plot from `results/generation/split1/*sample2000.csv` (launchers of the same name).
+`plot_conditioning_context.py` plots fixed loss-ratio figures (no CSV input; launcher of the same
+name). `map_hotspots_to_structure.py` projects hotspot frequencies onto `data/pdb/6VSB.pdb`
+(writes a mapping CSV + a PyMOL `.pml` script) — one launcher per `{rbd,spike} x {pred,true}`
+combination (`map_hotspots_to_structure_{rbd,spike}_{pred,true}.sh`). `render_structures.sh`
+(self-contained SLURM script living in `scripts/figures/`, not `cluster/slurm/`, since it predates
+that split) renders the resulting `.pml` files to PNGs via PyMOL.
+
+## Data
+
+Included: `data/dms/` (raw MaveDB DMS scores), `data/pdb/6VSB.pdb` (reference structure).
+
+**Not included:** `data/trajectories/*.parquet` (train/test ancestor→descendant pairs for both
+rbd and spike) — regenerate via the preprocessing pipeline above (step 11), or contact the authors.
+
+## Pretrained models
+
+**Not included** in this repository (checkpoints are large binary files). TODO: host the four
+trained checkpoints (`{rbd,spike} x {seqonly,treeaware}`, split1) externally (e.g. Hugging Face
+Hub or Zenodo) and link them here.
+
+## Citation
+
+TODO: add citation once the paper has a DOI / bibtex entry (consider also adding a
+`CITATION.cff`).
+
+## License
+
+MIT — see `LICENSE`.

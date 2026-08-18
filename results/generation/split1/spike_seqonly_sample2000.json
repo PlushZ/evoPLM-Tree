@@ -1,0 +1,9 @@
+{
+  "n_examples": 2000,
+  "seq_exact_match_rate": 0.0,
+  "mean_hamming_pred_true": 13.1235,
+  "mutation_precision": 0.07922154511499901,
+  "mutation_recall": 0.3852772466539197,
+  "mutation_f1": 0.13142018587966736,
+  "recovered_mutations_rate": 0.3852772466539197
+}

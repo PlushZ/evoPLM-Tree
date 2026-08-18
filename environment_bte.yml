@@ -1,0 +1,13 @@
+name: evoplm-paper-bte
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.11.9
+  - bte=0.9.3
+  - pandas=3.0.1
+  - pyarrow=16.1.0
+  - tqdm=4.67.3
+  - usher=0.6.6
+  - mafft=7.525
+  - ucsc-fatovcf=448
