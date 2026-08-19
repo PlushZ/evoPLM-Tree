@@ -235,8 +235,6 @@ def main():
     basename_to_out = {
         "split1_train_first3Omi2laterOmi.with_mat.parquet": "split1_train_first3Omi2laterOmi_pairs.parquet",
         "split1_test_first3Omi2laterOmi.with_mat.parquet":  "split1_test_first3Omi2laterOmi_pairs.parquet",
-        "split2_train_preOmi2Omi.with_mat.parquet":         "split2_train_preOmi2Omi_pairs.parquet",
-        "split2_test_preOmi2Omi.with_mat.parquet":          "split2_test_preOmi2Omi_pairs.parquet",
     }
 
     def find_row(basename: str):

@@ -24,10 +24,10 @@ What it tests (ONLY, for a prefix-LM checkpoint):
 This is the correct analogue of your earlier encoder-decoder collapse test.
 
 Usage (CPU):
-  python scripts/debug_prefix_lm_conditioning.py \
-    --model_dir models/prefixlm_treeaware_filtered/rbd/split1/maxT1024_tree1_maskp0.1_span3/final \
-    --tokenizer_json protein_tree_tokenizer.json \
-    --pairs_parquet data/.../mock_unique_rbd_t_max2000.parquet \
+  python scripts/diagnose_conditioning.py \
+    --model_dir models/treeaware/rbd/split1/maxT1024_tree1_maskp0.1_span3/final \
+    --tokenizer_json configs/protein_tree_tokenizer.json \
+    --pairs_parquet data/trajectories/split1_test_first3Omi2laterOmi_pairs__rbd_t_ne_rbd_t1__delta_nt_mutcount_ge_1.parquet \
     --seq_in_col rbd_t \
     --seq_out_col rbd_t1 \
     --device cpu \

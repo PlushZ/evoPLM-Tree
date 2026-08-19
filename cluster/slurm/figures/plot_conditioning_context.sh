@@ -10,10 +10,10 @@
 set -euo pipefail
 export PATH="$HOME/bin:/usr/bin:/bin"
 source "$HOME/miniconda/etc/profile.d/conda.sh"
-conda activate evoplm-paper
+conda activate evoplm
 export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:${LD_LIBRARY_PATH:-}"
 export PYTHONPATH="$PWD:${PYTHONPATH:-}"
 mkdir -p logs
 
 python scripts/figures/plot_conditioning_context.py \
-  --out_dir results/presentation_plots
+  --out_dir results/context_dependence/plots

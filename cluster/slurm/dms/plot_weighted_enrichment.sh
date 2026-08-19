@@ -10,20 +10,20 @@
 set -euo pipefail
 export PATH="$HOME/bin:/usr/bin:/bin"
 source "$HOME/miniconda/etc/profile.d/conda.sh"
-conda activate evoplm-paper
+conda activate evoplm
 export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:${LD_LIBRARY_PATH:-}"
 export PYTHONPATH="$PWD:${PYTHONPATH:-}"
 mkdir -p logs
 
 python scripts/dms/plot_weighted_enrichment.py \
-  --metrics_csv results/dms/metrics/metrics_summary_all_datasets.csv \
+  --metrics_csv results/dms/metrics_summary_all_datasets.csv \
   --out_dir results/dms/plots \
   --out_name dms_weighted_enrichment_treeaware.png \
   --model treeaware
 
 # Uncomment to also plot the seq-only model:
 # python scripts/dms/plot_weighted_enrichment.py \
-#   --metrics_csv results/dms/metrics/metrics_summary_all_datasets.csv \
+#   --metrics_csv results/dms/metrics_summary_all_datasets.csv \
 #   --out_dir results/dms/plots \
 #   --out_name dms_weighted_enrichment_seqonly.png \
 #   --model seqonly

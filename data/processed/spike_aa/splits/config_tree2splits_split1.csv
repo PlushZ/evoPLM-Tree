@@ -1,0 +1,3 @@
+split_parquet,mat_pb_gz,metadata_tsv_gz,out_parquet
+data/processed/spike_aa/splits/split1_train_first3Omi2laterOmi.parquet,data/usher/public-2022-06-01.all.masked.pb.gz,data/usher/public-2022-06-01.metadata.tsv.gz,data/processed/spike_aa/splits/split1_train_first3Omi2laterOmi.with_mat.parquet
+data/processed/spike_aa/splits/split1_test_first3Omi2laterOmi.parquet,data/usher/public-2026-01-21.all.masked.pb.gz,data/usher/public-2026-01-21.metadata.tsv.gz,data/processed/spike_aa/splits/split1_test_first3Omi2laterOmi.with_mat.parquet

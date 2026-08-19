@@ -3,7 +3,7 @@ import pandas as pd
 from pathlib import Path
 
 # === Input / Output ===
-in_path = Path("data/processed/spike_aa/spike.parquet")
+in_path = Path("data/processed/spike_aa/spike_nodup_location_coldate.parquet")
 out_path = Path("data/processed/spike_aa/spike_with_rbd.parquet")
 
 # === Load ===

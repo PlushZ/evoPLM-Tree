@@ -12,12 +12,12 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(allow_abbrev=False)
     parser.add_argument(
         "--metrics_csv",
-        default="results/dms_validation/metrics/metrics_summary_all_datasets.csv",
+        default="results/dms/metrics_summary_all_datasets.csv",
         help="Input metrics CSV with weighted_enrichment_vs_background.",
     )
     parser.add_argument(
         "--out_dir",
-        default="results/dms_validation/plots",
+        default="results/dms/plots",
         help="Directory for output figure.",
     )
     parser.add_argument(

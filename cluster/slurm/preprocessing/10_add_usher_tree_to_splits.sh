@@ -10,7 +10,7 @@
 set -euo pipefail
 export PATH="$HOME/bin:/usr/bin:/bin"
 source "$HOME/miniconda/etc/profile.d/conda.sh"
-conda activate evoplm-paper-bte
+conda activate evoplm-bte
 export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:${LD_LIBRARY_PATH:-}"
 
-python scripts/preprocessing/10_add_usher_tree_to_splits.py --config_csv data/processed/spike_aa/splits/config_tree2splits_all_splits.csv
+python scripts/preprocessing/10_add_usher_tree_to_splits.py --config_csv data/processed/spike_aa/splits/config_tree2splits_split1.csv

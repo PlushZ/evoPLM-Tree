@@ -1,7 +1,7 @@
 import pandas as pd
 from pathlib import Path
 
-meta_path = Path("data/raw/nextclade/all/gene_spike_metadata.tsv")
+meta_path = Path("data/raw/nextclade/all/nextclade_augmented.tsv")
 fasta_path = Path("data/raw/nextclade/all/gene_spike.fasta")
 
 out_dir = Path("data/processed/spike_aa")

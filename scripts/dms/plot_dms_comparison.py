@@ -11,8 +11,8 @@ import seaborn as sns
 
 def main():
     ap = argparse.ArgumentParser(allow_abbrev=False)
-    ap.add_argument("--metrics_dir", default="results/dms_validation/metrics")
-    ap.add_argument("--out_dir", default="results/dms_validation/plots")
+    ap.add_argument("--metrics_dir", default="results/dms")
+    ap.add_argument("--out_dir", default="results/dms/plots")
     ap.add_argument("--k", type=int, default=3)
     args = ap.parse_args()
 

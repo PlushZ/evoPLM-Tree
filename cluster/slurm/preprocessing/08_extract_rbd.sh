@@ -10,6 +10,6 @@
 set -euo pipefail
 export PATH="$HOME/bin:/usr/bin:/bin"
 source "$HOME/miniconda/etc/profile.d/conda.sh"
-conda activate evoplm-paper
+conda activate evoplm
 
 python scripts/preprocessing/08_extract_rbd.py

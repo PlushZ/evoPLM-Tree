@@ -14,12 +14,12 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--csv_glob",
-        default="results/generation/*sample2000.csv",
+        default="results/generation/split1/*sample2000.csv",
         help="Glob pattern for input CSV files.",
     )
     parser.add_argument(
         "--out_dir",
-        default="results/gen/plots",
+        default="results/generation/split1/plots",
         help="Directory where PNG plots will be written.",
     )
     return parser.parse_args()

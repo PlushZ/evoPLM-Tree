@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=evoplm-generate-rbd-treeaware
+#SBATCH -o logs/generate_rbd_treeaware.out
+#SBATCH -e logs/generate_rbd_treeaware.err
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
@@ -8,6 +10,8 @@
 set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "$REPO_ROOT"
+source "$HOME/miniconda/etc/profile.d/conda.sh"
+conda activate evoplm
 mkdir -p logs
 python scripts/generate_sequences.py \
   --model_dir models/treeaware/rbd/split1/maxT1024_tree1_maskp0.1_span3/final \

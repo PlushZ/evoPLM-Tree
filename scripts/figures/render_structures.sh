@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 # Render all PyMOL .pml files in a directory to PNGs.
 # Run:
-#   sbatch scripts/slurm/76_eval_plots/render_all_pml.sh
+#   sbatch scripts/figures/render_structures.sh
 
 #SBATCH -J pymol_render
 #SBATCH -p cpu-single
-#SBATCH --account=bw24h008
 #SBATCH -N 1 -c 2 --mem=16G
 #SBATCH -t 01:00:00
 #SBATCH --export=NONE
@@ -15,7 +14,7 @@
 set -euo pipefail
 export PATH="$HOME/bin:/usr/bin:/bin"
 source "$HOME/miniconda/etc/profile.d/conda.sh"
-conda activate evolm
+conda activate evoplm
 export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:${LD_LIBRARY_PATH:-}"
 mkdir -p logs
 
@@ -103,7 +102,7 @@ find_pymol_bin() {
 if ! PYMOL_CMD="$(find_pymol_bin)"; then
   echo "[error] Could not find a PyMOL executable." >&2
   echo "[hint] Options to fix:" >&2
-  echo "  1) Install into current env: conda activate evolm && conda install -c conda-forge pymol-open-source" >&2
+  echo "  1) Install into current env: conda activate evoplm && conda install -c conda-forge pymol-open-source" >&2
   echo "  2) Use dedicated env and set PYMOL_BIN, e.g. PYMOL_BIN='conda run -n pymol pymol'" >&2
   echo "  3) If your HPC uses modules, load one before submit (e.g., module load pymol)." >&2
   exit 1

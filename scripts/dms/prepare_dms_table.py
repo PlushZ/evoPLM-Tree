@@ -40,7 +40,7 @@ def parse_hgvs_pro(value: str):
 def main():
     ap = argparse.ArgumentParser(allow_abbrev=False)
     ap.add_argument("--in_csv", default="data/dms/urn_mavedb_00000670-a-1_scores.csv")
-    ap.add_argument("--out_csv", default="results/dms_validation/dms_scores/urn_mavedb_00000670-a-1_table.csv")
+    ap.add_argument("--out_csv", default="results/dms/dms_scores/urn_mavedb_00000670-a-1_table.csv")
     ap.add_argument("--hgvs_col", default="hgvs_pro")
     ap.add_argument("--score_col", default="score")
     args = ap.parse_args()

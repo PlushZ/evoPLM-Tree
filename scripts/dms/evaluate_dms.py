@@ -117,9 +117,9 @@ def fmt_for_filename(x: float) -> str:
 
 def main():
     ap = argparse.ArgumentParser(allow_abbrev=False)
-    ap.add_argument("--dms_scores_dir", default="results/dms_validation/dms_scores")
-    ap.add_argument("--seqonly_probs_csv", default="results/dms_validation/inference_logits/rbd_split2_seqonly_mutation_probs.csv")
-    ap.add_argument("--treeaware_probs_csv", default="results/dms_validation/inference_logits/rbd_split2_treeaware_mutation_probs.csv")
+    ap.add_argument("--dms_scores_dir", default="results/dms/dms_scores")
+    ap.add_argument("--seqonly_probs_csv", default="results/dms/rbd_split1_seqonly_mutation_probs.csv")
+    ap.add_argument("--treeaware_probs_csv", default="results/dms/rbd_split1_treeaware_mutation_probs.csv")
     ap.add_argument("--k", type=int, default=3)
     ap.add_argument(
         "--threshold",
@@ -129,7 +129,7 @@ def main():
     )
     ap.add_argument("--corr_min_dms", type=float, default=None, help="Optional correlation-only filter: keep rows with dms_score > this.")
     ap.add_argument("--corr_top_prob_quantile", type=float, default=None, help="Optional correlation-only filter: keep rows with prob >= quantile cutoff (e.g. 0.8 = top 20%).")
-    ap.add_argument("--out_root", default="results/dms_validation/metrics")
+    ap.add_argument("--out_root", default="results/dms")
     args = ap.parse_args()
 
     if args.k <= 0:

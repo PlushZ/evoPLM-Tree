@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=evoplm-train-rbd-seqonly
+#SBATCH -o logs/train_rbd_seqonly.out
+#SBATCH -e logs/train_rbd_seqonly.err
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=24G
@@ -8,6 +10,8 @@
 set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "$REPO_ROOT"
+source "$HOME/miniconda/etc/profile.d/conda.sh"
+conda activate evoplm
 mkdir -p logs
 python scripts/train_prefix_lm.py \
   --task rbd --split split1 \

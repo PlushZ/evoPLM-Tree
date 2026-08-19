@@ -13,11 +13,11 @@ set -euo pipefail
 
 export PATH="$HOME/bin:/usr/bin:/bin"
 source "$HOME/miniconda/etc/profile.d/conda.sh"
-conda activate evoplm-paper-bte
+conda activate evoplm-bte
 export LD_LIBRARY_PATH="${CONDA_PREFIX}/lib:${LD_LIBRARY_PATH:-}"
 
 python scripts/preprocessing/11_gen_trajectories_tree_aware.py \
-  --config_csv data/processed/spike_aa/splits/config_tree2splits_all_splits.csv \
+  --config_csv data/processed/spike_aa/splits/config_tree2splits_split1.csv \
   --out_dir data/processed/spike_aa/trajectories \
   --k_list 1,2,4,8 \
   --max_train_pairs_per_desc 2 \

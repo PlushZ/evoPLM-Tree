@@ -1,4 +1,4 @@
-name: evoplm-paper-bte
+name: evoplm-bte
 channels:
   - conda-forge
   - bioconda

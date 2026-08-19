@@ -10,7 +10,7 @@
 set -euo pipefail
 export PATH="$HOME/bin:/usr/bin:/bin"
 source "$HOME/miniconda/etc/profile.d/conda.sh"
-conda activate evoplm-paper
+conda activate evoplm
 
 IN=data/raw/ncbi_virus/all_genomes.fasta
 FIL=data/raw/ncbi_virus/all_genomes_len28500_31000.fasta

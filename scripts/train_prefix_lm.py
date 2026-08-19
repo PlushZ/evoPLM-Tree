@@ -34,12 +34,9 @@ def set_seed(seed: int = 0):
 
 
 def pick_paths(traj_dir: Path, split: str, task: str) -> Tuple[Path, Path]:
-    if split == "split1":
-        stem = "first3Omi2laterOmi"
-    elif split == "split2":
-        stem = "preOmi2Omi"
-    else:
-        raise ValueError("split must be split1 or split2")
+    if split != "split1":
+        raise ValueError("split must be split1")
+    stem = "first3Omi2laterOmi"
 
     if task not in {"rbd", "spike"}:
         raise ValueError("task must be rbd or spike")
@@ -208,8 +205,8 @@ def build_example(
 def main():
     ap = argparse.ArgumentParser(allow_abbrev=False)
     ap.add_argument("--task", choices=["rbd", "spike"], required=True)
-    ap.add_argument("--split", choices=["split1", "split2"], required=True)
-    ap.add_argument("--traj_dir", default="data/processed/spike_aa/trajectories/filtered_trivial")
+    ap.add_argument("--split", choices=["split1"], required=True)
+    ap.add_argument("--traj_dir", default="data/trajectories")
     ap.add_argument("--tokenizer_json", default="configs/protein_tree_tokenizer.json")
     ap.add_argument("--out_root", default="models/prefixlm_treeaware_filtered")
     ap.add_argument("--use_tree_tokens", action="store_true", help="Include tree tokens in prefix.")

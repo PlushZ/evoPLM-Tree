@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=evoplm-teacher-forcing-spike-treeaware
+#SBATCH -o logs/evaluate_spike_treeaware.out
+#SBATCH -e logs/evaluate_spike_treeaware.err
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
@@ -8,6 +10,8 @@
 set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "$REPO_ROOT"
+source "$HOME/miniconda/etc/profile.d/conda.sh"
+conda activate evoplm
 mkdir -p logs
 python scripts/evaluate_teacher_forcing.py \
   --model_dir models/treeaware/spike/split1/maxT4096_tree1_maskp0.1_span3/final \

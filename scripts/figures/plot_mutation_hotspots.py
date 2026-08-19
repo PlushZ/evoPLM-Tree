@@ -12,7 +12,6 @@ from scipy.stats import spearmanr
 
 TRUE_COLOR = "#d1007a"
 PRED_COLOR = "#1a9d49"
-OUTPUT_SUFFIX = "_mss_talk_adapted"
 
 
 def parse_args() -> argparse.Namespace:
@@ -176,7 +175,7 @@ def plot_csv(csv_path: Path, out_dir: Path) -> None:
         true_values=true_freq,
         pred_values=pred_freq,
         corr_text=corr_text,
-        out_name=f"{csv_path.stem}_mutation_hotspots{OUTPUT_SUFFIX}.png",
+        out_name=f"{csv_path.stem}_mutation_hotspots.png",
     )
 
     denom = float(len(df))
@@ -192,7 +191,7 @@ def plot_csv(csv_path: Path, out_dir: Path) -> None:
         true_values=true_norm,
         pred_values=pred_norm,
         corr_text=corr_norm_text,
-        out_name=f"{csv_path.stem}_mutation_hotspots_normN{OUTPUT_SUFFIX}.png",
+        out_name=f"{csv_path.stem}_mutation_hotspots_normN.png",
     )
 
 

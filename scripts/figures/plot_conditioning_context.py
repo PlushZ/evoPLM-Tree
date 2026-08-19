@@ -10,7 +10,6 @@ SEQONLY_COLOR = "#d1007a"
 TREEAWARE_COLOR = "#1a9d49"
 EDGE_COLOR = "#3a3a3a"
 PARITY_COLOR = "#444444"
-OUTPUT_SUFFIX = "_mss_talk_adapted"
 
 MODEL_RATIOS = {
     "rbd": {
@@ -28,7 +27,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--out_dir",
-        default="results/presentation_plots",
+        default="results/context_dependence/plots",
         help="Directory where the presentation plots will be written.",
     )
     return parser.parse_args()
@@ -86,7 +85,7 @@ def make_plot(domain: str, show_treeaware: bool, out_dir: Path) -> None:
         )
 
     variant = "both" if show_treeaware else "seqonly_only"
-    out_path = out_dir / f"conditioning_context_dependence_{domain}_{variant}{OUTPUT_SUFFIX}.png"
+    out_path = out_dir / f"conditioning_context_dependence_{domain}_{variant}.png"
     fig.tight_layout()
     fig.savefig(out_path, dpi=220)
     plt.close(fig)

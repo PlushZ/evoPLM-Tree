@@ -10,7 +10,7 @@
 set -euo pipefail
 export PATH="$HOME/bin:/usr/bin:/bin"
 source "$HOME/miniconda/etc/profile.d/conda.sh"
-conda activate evoplm-paper
+conda activate evoplm
 
 mkdir -p data/raw/ncbi_virus
 
@@ -20,3 +20,6 @@ datasets download virus genome taxon 2697049 \
   --filename data/raw/ncbi_virus/ncbi_all.zip
 
 unzip -o data/raw/ncbi_virus/ncbi_all.zip -d data/raw/ncbi_virus/all/
+
+# 02_prefilter_split.sh expects a single flat multi-FASTA at this path
+cp data/raw/ncbi_virus/all/ncbi_dataset/data/genomic.fna data/raw/ncbi_virus/all_genomes.fasta
