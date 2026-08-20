@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import re
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -11,20 +12,27 @@ TREEAWARE_COLOR = "#1a9d49"
 EDGE_COLOR = "#3a3a3a"
 PARITY_COLOR = "#444444"
 
-MODEL_RATIOS = {
-    "rbd": {
-        "seqonly": 1.048,
-        "treeaware": 1.242,
-    },
-    "spike": {
-        "seqonly": 1.275,
-        "treeaware": 1.736,
-    },
-}
+RATIO_RE = re.compile(r"ratio masked/normal\s*=\s*([0-9.]+)")
+
+
+def read_ratio(log_dir: Path, domain: str, model: str) -> float:
+    log_path = log_dir / f"{domain}_{model}.txt"
+    text = log_path.read_text()
+    m = RATIO_RE.search(text)
+    if not m:
+        raise ValueError(f"Could not find 'ratio masked/normal' in {log_path}")
+    return float(m.group(1))
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--log_dir",
+        default="results/context_dependence",
+        help="Directory containing the diagnose_conditioning.py stdout logs "
+             "({domain}_{model}.txt, e.g. rbd_seqonly.txt), one per "
+             "cluster/slurm/evaluate/diagnose_conditioning_*.sh run.",
+    )
     parser.add_argument(
         "--out_dir",
         default="results/context_dependence/plots",
@@ -33,8 +41,11 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def make_plot(domain: str, show_treeaware: bool, out_dir: Path) -> None:
-    ratios = MODEL_RATIOS[domain]
+def make_plot(domain: str, show_treeaware: bool, log_dir: Path, out_dir: Path) -> None:
+    ratios = {
+        "seqonly": read_ratio(log_dir, domain, "seqonly"),
+        "treeaware": read_ratio(log_dir, domain, "treeaware"),
+    }
     labels = ["seq-only", "tree-aware"]
     positions = [0, 1]
     width = 0.62
@@ -94,13 +105,14 @@ def make_plot(domain: str, show_treeaware: bool, out_dir: Path) -> None:
 
 def main() -> None:
     args = parse_args()
+    log_dir = Path(args.log_dir)
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    make_plot("rbd", show_treeaware=False, out_dir=out_dir)
-    make_plot("rbd", show_treeaware=True, out_dir=out_dir)
-    make_plot("spike", show_treeaware=False, out_dir=out_dir)
-    make_plot("spike", show_treeaware=True, out_dir=out_dir)
+    make_plot("rbd", show_treeaware=False, log_dir=log_dir, out_dir=out_dir)
+    make_plot("rbd", show_treeaware=True, log_dir=log_dir, out_dir=out_dir)
+    make_plot("spike", show_treeaware=False, log_dir=log_dir, out_dir=out_dir)
+    make_plot("spike", show_treeaware=True, log_dir=log_dir, out_dir=out_dir)
 
 
 if __name__ == "__main__":

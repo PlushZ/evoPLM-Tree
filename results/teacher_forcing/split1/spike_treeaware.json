@@ -1,8 +1,0 @@
-{
-  "n_examples": 520091,
-  "mean_token_logprob_true": -13.442657012916781,
-  "mean_token_nll_true": 13.442657012916781,
-  "mean_per_position_entropy": 0.009556362151267915,
-  "unigram_baseline_mean_nll": 2.9066492075667174,
-  "ll_improvement_over_unigram": -10.536007805350064
-}

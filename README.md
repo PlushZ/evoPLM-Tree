@@ -19,8 +19,7 @@ scripts/
                              filter trivial pairs (launchers live under cluster/slurm/preprocessing/)
   train_prefix_lm.py        Prefix-LM training (rbd/spike x seq-only/tree-aware, split1 only)
   generate_sequences.py     Stratified-sample generation + mutation-recovery metrics
-  evaluate_teacher_forcing.py  Teacher-forced conditioning-dependence evaluation
-  diagnose_conditioning.py  Ad-hoc conditioning sanity check (no SLURM launcher; run interactively)
+  diagnose_conditioning.py  Masked-vs-visible-prompt teacher-forced loss ratio (source of Fig. 2)
   dms/                      DMS validation: table prep, mutation-probability inference,
                              enrichment/correlation metrics, plots
   figures/                  Generation-metric, hotspot, and structure-mapping figures
@@ -28,10 +27,11 @@ cluster/slurm/
   preprocessing/             Launchers for scripts/preprocessing/01-12 (same numbering)
   train/                    train_{rbd,spike}_{seqonly,treeaware}.sbatch
   evaluate/                 generate_{rbd,spike}_{seqonly,treeaware}.sbatch (sampled generation)
-                             evaluate_{rbd,spike}_{seqonly,treeaware}.sbatch (teacher forcing)
+                             diagnose_conditioning_{rbd,spike}_{seqonly,treeaware}.sh
+                             (masked/visible loss-ratio conditioning-dependence eval, Fig. 2)
   dms/                      prepare_dms_table.sh, infer_mutation_probabilities.sh, evaluate_dms.sh,
-                             merge_metrics_summaries.sh, plot_dms_comparison.sh,
-                             plot_weighted_enrichment.sh (see "DMS validation" below)
+                             plot_dms_comparison.sh, plot_weighted_enrichment.sh
+                             (see "DMS validation" below)
   figures/                  plot_generation_metrics.sh, plot_mutation_hotspots.sh,
                              plot_conditioning_context.sh, plot_observed_vs_predicted_frequency.sh,
                              map_hotspots_to_structure_{rbd,spike}_{pred,true}.sh
@@ -44,7 +44,8 @@ data/
   trajectories/              NOT INCLUDED — see "Data" below
 results/
   generation/split1/        Sampled generation outputs + hotspot-to-structure mappings
-  teacher_forcing/split1/    Teacher-forced conditioning-dependence eval outputs
+  context_dependence/        diagnose_conditioning.py stdout logs (masked/visible loss ratios,
+                             Fig. 2 source data) + rendered plots
   dms/                       DMS validation tables/metrics
 models/                      NOT INCLUDED — see "Pretrained models" below
 ```
@@ -124,21 +125,26 @@ and writes to `models/{seqonly,treeaware}/{task}/{split}/maxT.../final`.
 ### 3. Generation & evaluation
 
 ```bash
-sbatch cluster/slurm/evaluate/generate_rbd_treeaware.sbatch   # sampled generation + mutation-recovery metrics
-sbatch cluster/slurm/evaluate/evaluate_rbd_seqonly.sbatch      # teacher-forced conditioning-dependence eval
+sbatch cluster/slurm/evaluate/generate_rbd_treeaware.sbatch                 # sampled generation + mutation-recovery metrics
+sbatch cluster/slurm/evaluate/diagnose_conditioning_rbd_treeaware.sh        # masked/visible loss-ratio eval (Fig. 2)
 ```
 
 `generate_*.sbatch` calls `scripts/generate_sequences.py`, producing
 `results/generation/split1/{rbd,spike}_{seqonly,treeaware}_sample2000.{csv,json}`.
-`evaluate_*.sbatch` calls `scripts/evaluate_teacher_forcing.py`, producing
-`results/teacher_forcing/split1/{rbd,spike}_{seqonly,treeaware}.json` plus `_metrics.csv` and
-`_examples.csv`. The committed `results/teacher_forcing/split1/*_examples_first100.csv` files are
-a hand-truncated preview (header + first 100 rows) of the full `_examples.csv` a real run
-produces — the `_first100` suffix is not something the launcher/script generates itself.
 
-`scripts/diagnose_conditioning.py` is an additional ad-hoc sanity check (compares generation/loss
-with the conditioning prefix visible vs. masked) — run it interactively; no SLURM launcher is
-provided since it isn't tied to a specific reported result.
+`diagnose_conditioning_{rbd,spike}_{seqonly,treeaware}.sh` calls `scripts/diagnose_conditioning.py`,
+which computes teacher-forced loss twice per example — once with the conditioning prompt visible,
+once with its attention-mask zeroed — and reports the ratio (`ratio masked/normal`). This is the
+exact computation behind Fig. 2's four loss ratios (RBD: 1.048/1.242 seq-only/tree-aware; spike:
+1.275/1.736). Each launcher `tee`s its full stdout to
+`results/context_dependence/{rbd,spike}_{seqonly,treeaware}.txt`; `plot_conditioning_context.py`
+(see "Figures" below) parses the `ratio masked/normal` line from those four logs directly, so Fig. 2
+is reproducible end to end from these launchers with no hand-copied numbers.
+
+Note this script also runs a *generation* prompt-dependence check (does the sampled continuation
+change when the prompt is masked, `--do_sample --top_p 0.9`) and prints per-example previews —
+this is not itself plotted in the paper, but is useful as a qualitative sanity check alongside the
+quantitative loss ratio.
 
 ### 4. DMS validation (`cluster/slurm/dms/`, python in `scripts/dms/`)
 
@@ -146,19 +152,15 @@ Pipeline: `prepare_dms_table.py` (parse raw MaveDB scores into `results/dms/dms_
 launcher: `prepare_dms_table.sh`, run once per included MaveDB dataset ID: 670 and 671)
 → `infer_mutation_probabilities.py` (per-site mutation probabilities from a trained checkpoint,
 launcher: `infer_mutation_probabilities.sh`) → `evaluate_dms.py` (merge + correlation/enrichment
-metrics, launcher: `evaluate_dms.sh`) → `merge_metrics_summaries.py` (combine the per-dataset
-metrics tables, launcher: `merge_metrics_summaries.sh`) → `plot_dms_comparison.sh` /
-`plot_weighted_enrichment.sh`.
+metrics, launcher: `evaluate_dms.sh`) → `plot_dms_comparison.sh` / `plot_weighted_enrichment.sh`.
 
-`evaluate_dms.sh` reads the `*_table.csv` files from `results/dms/dms_scores/` (the script globs
-every `*.csv` in `--dms_scores_dir`, so it can't point directly at the mixed `results/dms/` root)
-and writes one subdirectory per dataset directly under `results/dms/`
+`evaluate_dms.sh` reads every `*_table.csv` file from `results/dms/dms_scores/` in a single run (the
+script globs `*.csv` in `--dms_scores_dir`, so it can't point directly at the mixed `results/dms/`
+root) and writes one subdirectory per dataset directly under `results/dms/`
 (`results/dms/urn_mavedb_00000670-a-1/`, `.../000671-a-1/`), each with its own
-`{seqonly,treeaware}_merged_probs_dms.csv` / `_top3_mutations.csv` / `metrics_summary.csv`.
-`evaluate_dms.py` also writes a combined `results/dms/metrics_summary_all_datasets.csv` itself
-from whatever datasets it just processed; `merge_metrics_summaries.sh` regenerates that same
-combined file standalone, by concatenating the two `metrics_summary.csv` files, without re-running
-inference — handy if you only edited the per-dataset tables.
+`{seqonly,treeaware}_merged_probs_dms.csv` / `_top3_mutations.csv` / `metrics_summary.csv`, plus a
+single combined `results/dms/metrics_summary_all_datasets.csv` written at the end of that same run
+(concatenating every dataset it just processed) — no separate merge step is needed.
 
 `plot_dms_comparison.sh` calls `plot_dms_comparison.py` once per dataset subdirectory (the script
 itself expects a flat metrics dir, so it can't be pointed at the shared root the way the original
@@ -169,8 +171,10 @@ configured there either).
 
 `plot_generation_metrics.py`, `plot_mutation_hotspots.py`, `plot_observed_vs_predicted_frequency.py`
 plot from `results/generation/split1/*sample2000.csv` (launchers of the same name).
-`plot_conditioning_context.py` plots fixed loss-ratio figures (no CSV input; launcher of the same
-name; writes to `results/context_dependence/plots`). `map_hotspots_to_structure.py` projects
+`plot_conditioning_context.py` reads the masked/visible loss ratios from
+`results/context_dependence/{rbd,spike}_{seqonly,treeaware}.txt` (produced by
+`diagnose_conditioning_*.sh`, see "Generation & evaluation" above; launcher of the same name;
+writes to `results/context_dependence/plots`). `map_hotspots_to_structure.py` projects
 hotspot frequencies onto `data/pdb/6VSB.pdb`
 (writes a mapping CSV + a PyMOL `.pml` script) — one launcher per `{rbd,spike} x {pred,true}`
 combination (`map_hotspots_to_structure_{rbd,spike}_{pred,true}.sh`). `render_structures.sh`
