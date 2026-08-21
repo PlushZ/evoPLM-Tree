@@ -28,5 +28,5 @@ done
 # merge Spike AA FASTAs
 cat "$PARTS"/*/nextclade.cds_translation.S.fasta > "$OUTDIR/gene_spike.fasta"
 
-#echo "Merged TSV -> $OUTDIR/nextclade.tsv"
+echo "Merged TSV -> $OUTDIR/nextclade.tsv"
 echo "Merged Spike -> $OUTDIR/gene_spike.fasta"

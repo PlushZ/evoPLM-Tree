@@ -1,9 +1,10 @@
-# Ancestor→descendant trajectory pairs (train/test datasets)
+# Ancestor→descendant sequence pairs (train/test datasets)
+Can be downloaded from [Zenodo](https://doi.org/10.5281/zenodo.22045909).
 
 **Not included** in this repository — these parquet files are the final training/test
-datasets for `scripts/train_prefix_lm.py` and are too large to check into git.
+datasets for `scripts/train_prefix_lm.py`.
 
-Expected contents (split1 only):
+Expected contents:
 
 | File | Written by | Read by |
 |---|---|---|
@@ -16,9 +17,6 @@ Expected contents (split1 only):
 (no sequence change / no nt substitutions) out of step 11's output
 (`data/processed/spike_aa/trajectories/`, see `data/processed/README.md`), split per task.
 
-**TODO:** add the Zenodo record URL/DOI for these files once published, so they can be
-downloaded directly instead of regenerated from raw data.
-
 Regenerate via the full preprocessing pipeline (`cluster/slurm/preprocessing/01`
 through `12`, see the top-level [README.md](../../README.md)), or download them from
-Zenodo once the link above is filled in.
+Zenodo (via link above).

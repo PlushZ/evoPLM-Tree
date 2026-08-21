@@ -19,7 +19,6 @@ Outputs:
 
 import os
 import re
-import gzip
 import argparse
 import pandas as pd
 from tqdm import tqdm
@@ -35,8 +34,6 @@ def normalize_accession(acc: str) -> str:
     acc = str(acc).strip()
     if acc == "" or acc.lower() == "nan":
         return ""
-    # keep both versioned and unversioned matches:
-    # we'll store versioned as-is and also create a no-version key outside.
     return acc
 
 
@@ -54,7 +51,6 @@ def load_usher_metadata_map(metadata_tsv_gz: str) -> pd.DataFrame:
     md = pd.read_csv(metadata_tsv_gz, sep="\t", compression="gzip", low_memory=False)
 
     # Common column names: 'genbank_accession', 'strain' (UCSC/UShER distribution)
-    # If your metadata uses different names, edit here.
     required = ["genbank_accession", "strain"]
     for c in required:
         if c not in md.columns:
@@ -66,7 +62,7 @@ def load_usher_metadata_map(metadata_tsv_gz: str) -> pd.DataFrame:
     # drop empties
     md = md[(md["genbank_accession"] != "") & (md["genbank_accession"] != "nan")].copy()
 
-    # Keep only what we need
+    # Keep only what needed
     md = md[["genbank_accession", "genbank_accession_noversion", "strain"]].drop_duplicates()
 
     return md

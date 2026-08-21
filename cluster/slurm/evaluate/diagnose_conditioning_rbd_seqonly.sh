@@ -16,7 +16,7 @@ export PYTHONPATH="$PWD:${PYTHONPATH:-}"
 
 mkdir -p results/context_dependence
 
-# Produces the masked/visible teacher-forced loss ratio behind Fig. 2 (RBD, seq-only).
+# Produces the masked/visible teacher-forced loss ratio (RBD, seq-only).
 # plot_conditioning_context.py reads the "ratio masked/normal" line from this log.
 python scripts/diagnose_conditioning.py \
   --model_dir models/seqonly/rbd/split1/maxT1024_tree0_maskp0.1_span3/final \

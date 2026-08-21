@@ -76,11 +76,13 @@ This installs the `evoplm` package itself (editable, from `src/`) via the `-e .`
 conda env create -f environment_bte.yml
 ```
 
-`environment.yml` and `environment_bte.yml` are pinned to exactly what `conda list -n evolm` /
-`conda list -n evolm_bte` reported on the original cluster environments. `scikit-learn`,
-`umap-learn`, and `jupyterlab` are also present in `evolm` but are not included here since no
-script in this repo imports them (they appear to have been used for exploratory notebooks only);
-add them (`scikit-learn=1.7.2`, `umap-learn=0.5.11`, `jupyterlab=4.4.10`) if you need that parity.
+`environment.yml` and `environment_bte.yml` are pinned to what `conda list -n evolm` /
+`conda list -n evolm_bte` reported on the original cluster environments, minus packages no script
+in this repo actually uses. `scikit-learn`, `umap-learn`, and `jupyterlab` are also present in
+`evolm` but not included here (used for exploratory notebooks only); add them
+(`scikit-learn=1.7.2`, `umap-learn=0.5.11`, `jupyterlab=4.4.10`) if you need that parity. `samtools`,
+`jq`, and `parallel` were also dropped from `environment.yml` — none of the committed launchers or
+scripts invoke them.
 
 ## Reproducing the pipeline
 
@@ -193,14 +195,7 @@ third-party data, not hosted alongside this repo's own artifacts.
 
 ## Pretrained models
 
-**Not included** in this repository (checkpoints are large binary files); see
-`models/README.md` for the expected directory layout. TODO: host the four trained checkpoints
-(`{rbd,spike} x {seqonly,treeaware}`, split1) on Zenodo and link them here.
-
-## Citation
-
-TODO: add citation once the paper has a DOI / bibtex entry (consider also adding a
-`CITATION.cff`).
+see `models/README.md` for the expected directory layout. Can be downloaded from [Zenodo](https://doi.org/10.5281/zenodo.22045909).
 
 ## License
 

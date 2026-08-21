@@ -16,9 +16,6 @@ dependencies:
   - ncbi-datasets-cli=18.20.0
   - nextclade=3.20.0
   - seqkit=2.13.0
-  - samtools=1.21
-  - jq=1.8.1
-  - parallel=20260122
   - pymol-open-source=3.0.0
   - pip=25.2
   - pip:

@@ -3,7 +3,7 @@
 Tree-aware trajectory generation using per-split MATs.
 
 Key idea:
-- Internal nodes have no sequences in your data.
+- Internal nodes have no sequences in data.
 - We create a mapping internal_node -> representative leaf in its subtree.
 - For each descendant leaf v, choose internal ancestor a = ancestor_at_k(v,k),
   then ancestor leaf u = rep_leaf[a], emit pair u -> v with delta_edges = dist(u,a)+k.
@@ -231,7 +231,7 @@ def main():
 
     cfg = pd.read_csv(args.config_csv)
 
-    # We assume naming in your config matches these outputs:
+    # assume naming in config matches these outputs:
     basename_to_out = {
         "split1_train_first3Omi2laterOmi.with_mat.parquet": "split1_train_first3Omi2laterOmi_pairs.parquet",
         "split1_test_first3Omi2laterOmi.with_mat.parquet":  "split1_test_first3Omi2laterOmi_pairs.parquet",

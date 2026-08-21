@@ -11,8 +11,6 @@ Tree tokens are designed to be OPTIONAL:
 - Include them during TRAIN (phylogeny-regularized training).
 - Mask or omit them during TEST (sequence-only inference).
 
-Masking strategy should be implemented in the dataset/training code,
-not in the tokenizer.
 """
 
 from __future__ import annotations
@@ -35,7 +33,7 @@ class BucketSpec:
 
 
 DEFAULT_BUCKETS: Dict[str, BucketSpec] = {
-    # You can tune these maxima to match your observed ranges.
+    # can tune these maxima to match the observed ranges.
     "delta_edges":        BucketSpec(name="delta_edges",        prefix="DE",     max_value=512, pad_width=3),
     "delta_nt_mutcount":  BucketSpec(name="delta_nt_mutcount",  prefix="DNT",    max_value=2048, pad_width=4),
     "depth_t":            BucketSpec(name="depth_t",            prefix="DEP_T",  max_value=512, pad_width=3),

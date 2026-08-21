@@ -55,9 +55,6 @@ def calculate_mutation_frequencies(csv_path):
     if nonzero_positions.size == 0:
         raise ValueError(f"{csv_path} contains no observed or predicted mutations.")
 
-    # Match the normN correlation in 76_3 exactly: RBD uses the full
-    # reference sequence, while spike uses positions through the last
-    # observed or predicted mutation. This retains zero-frequency positions.
     if "rbd" in csv_path.stem.lower():
         plot_positions = np.arange(n_ref)
     else:

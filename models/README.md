@@ -1,10 +1,9 @@
 # Trained model checkpoints
+Can be downloaded from [Zenodo](https://doi.org/10.5281/zenodo.22045909).
 
-**Not included** in this repository — checkpoints are large binary files.
+**Not included** in this repository.
 
-**TODO:** add the Zenodo record URL/DOI for the trained checkpoints once published.
-
-Expected layout (split1 only):
+Expected layout:
 
 | Path | Written by | Read by |
 |---|---|---|
@@ -16,7 +15,6 @@ Expected layout (split1 only):
 Each `final/` directory is a Hugging Face `transformers` checkpoint (`BertLMHeadModel`)
 saved via `trainer.save_model(...)` in `scripts/train_prefix_lm.py`
 (see the top-level [README.md](../README.md), "Training"). The training input,
-`data/trajectories/*.parquet`, is also not included — see `data/trajectories/README.md`.
+`data/trajectories/*.parquet` — see `data/trajectories/README.md`.
 
-Regenerate by running the training pipeline end to end, or download the checkpoints from
-Zenodo once the link above is filled in.
+Regenerate by running the training pipeline end to end, or download from Zenodo (vial link above).

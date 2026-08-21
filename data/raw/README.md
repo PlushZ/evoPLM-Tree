@@ -3,9 +3,7 @@
 **Not included** in this repository: these are large intermediate files produced by the very
 first preprocessing steps (raw genome downloads and per-genome QC annotation), before any
 filtering. They are not hosted externally either — regenerate them by running the pipeline
-below, since they're cheap to reproduce from public NCBI/Nextclade sources (unlike the
-downstream trajectory/model artifacts, which take much longer to regenerate and *are*
-earmarked for Zenodo — see `data/trajectories/README.md` and `models/README.md`).
+below, since they're cheap to reproduce from public NCBI/Nextclade sources.
 
 Expected contents, by subdirectory:
 
@@ -21,7 +19,7 @@ Expected contents, by subdirectory:
 | `nextclade/all/gene_spike.fasta` | `04_merge_nextclade.sh` | `scripts/preprocessing/06_filter_metadata.py` |
 | `nextclade/all/nextclade_augmented.tsv` | `scripts/preprocessing/05_augment_nextclade.py` | `scripts/preprocessing/06_filter_metadata.py` |
 
-From step 06 onward, outputs move to `data/processed/` — see `data/processed/README.md`.
-
 Regenerate by running `cluster/slurm/preprocessing/01` through `05` in order (see the
 top-level [README.md](../../README.md), "Data preprocessing").
+
+(From step 06 onward, outputs move to `data/processed/` — see `data/processed/README.md`.)

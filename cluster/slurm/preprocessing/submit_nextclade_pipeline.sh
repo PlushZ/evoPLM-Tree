@@ -6,7 +6,7 @@ SHARD_LIST="data/raw/ncbi_virus/shards/shard_list.txt"
 ARRAY_JOB="cluster/slurm/preprocessing/03_nextclade_array.sh"
 MERGE_JOB="cluster/slurm/preprocessing/04_merge_nextclade.sh"
 
-BATCH_SIZE=${BATCH_SIZE:-50}   # submit at most this many tasks at once (fits your 50 limit)
+BATCH_SIZE=${BATCH_SIZE:-50}   # submit at most this many tasks at once (fits 50 limit)
 POLL_SECS=${POLL_SECS:-120}     # how often to check if the wave finished
 THROTTLE=${THROTTLE:-$BATCH_SIZE}  # cap concurrency inside each wave (can leave as default)
 

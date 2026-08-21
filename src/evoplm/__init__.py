@@ -1,4 +1,4 @@
-"""Core utilities for the evoPLM paper release."""
+"""Core utilities for the evoPLM-Tree"""
 
 from .tokenizer import ProteinTreeTokenizer
 

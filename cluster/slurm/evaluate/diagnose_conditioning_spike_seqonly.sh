@@ -16,7 +16,7 @@ export PYTHONPATH="$PWD:${PYTHONPATH:-}"
 
 mkdir -p results/context_dependence
 
-# Produces the masked/visible teacher-forced loss ratio behind Fig. 2 (spike, seq-only).
+# Produces the masked/visible teacher-forced loss ratio (spike, seq-only).
 # plot_conditioning_context.py reads the "ratio masked/normal" line from this log.
 python scripts/diagnose_conditioning.py \
   --model_dir models/seqonly/spike/split1/maxT4096_tree0_maskp0.1_span3/final \

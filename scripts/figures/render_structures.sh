@@ -18,9 +18,9 @@ conda activate evoplm
 export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:${LD_LIBRARY_PATH:-}"
 mkdir -p logs
 
-# ---------------------------
-# User config (edit these)
-# ---------------------------
+# ------------
+# User config 
+# ------------
 PML_GLOB="results/generation/split1/hotspots_to_structure/*.pml"
 RAY_W=2400
 RAY_H=1800

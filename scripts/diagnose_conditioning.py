@@ -21,22 +21,6 @@ What it tests (ONLY, for a prefix-LM checkpoint):
    - normal attention mask
    - masked-prefix attention mask (prefix tokens masked out)
 
-This is the correct analogue of your earlier encoder-decoder collapse test.
-
-Usage (CPU):
-  python scripts/diagnose_conditioning.py \
-    --model_dir models/treeaware/rbd/split1/maxT1024_tree1_maskp0.1_span3/final \
-    --tokenizer_json configs/protein_tree_tokenizer.json \
-    --pairs_parquet data/trajectories/split1_test_first3Omi2laterOmi_pairs__rbd_t_ne_rbd_t1__delta_nt_mutcount_ge_1.parquet \
-    --seq_in_col rbd_t \
-    --seq_out_col rbd_t1 \
-    --device cpu \
-    --n_rows 256 \
-    --batch_size 16 \
-    --max_new_tokens 260 \
-    --use_tree_tokens \
-    --compute_teacher_forced_loss
-
 Notes:
 - Works for both rbd/spike (set seq cols + max_new_tokens accordingly).
 - Prints *continuation-only* stats (not prompt+continuation).
@@ -44,7 +28,7 @@ Notes:
 
 from __future__ import annotations
 import argparse
-from typing import Any, Dict, List, Tuple, Optional
+from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
