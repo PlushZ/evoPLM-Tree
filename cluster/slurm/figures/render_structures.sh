@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Render all PyMOL .pml files in a directory to PNGs.
 # Run:
-#   sbatch scripts/figures/render_structures.sh
+#   sbatch cluster/slurm/figures/render_structures.sh
 
 #SBATCH -J pymol_render
 #SBATCH -p cpu-single

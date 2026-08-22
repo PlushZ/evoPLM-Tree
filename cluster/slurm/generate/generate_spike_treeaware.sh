@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# GPU job (requests 1 GPU via --gres=gpu:1; CPU-only launchers elsewhere in cluster/slurm/ use -p cpu-single).
 #SBATCH --job-name=evoplm-generate-spike-treeaware
 #SBATCH -o logs/generate_spike_treeaware.out
 #SBATCH -e logs/generate_spike_treeaware.err

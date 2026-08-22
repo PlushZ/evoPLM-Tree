@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# GPU job (requests 1 GPU via --gres=gpu:1; CPU-only launchers elsewhere in cluster/slurm/ use -p cpu-single).
 #SBATCH --job-name=evoplm-generate-spike-seqonly
 #SBATCH -o logs/generate_spike_seqonly.out
 #SBATCH -e logs/generate_spike_seqonly.err

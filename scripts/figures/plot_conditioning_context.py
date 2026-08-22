@@ -31,7 +31,7 @@ def parse_args() -> argparse.Namespace:
         default="results/context_dependence",
         help="Directory containing the diagnose_conditioning.py stdout logs "
              "({domain}_{model}.txt, e.g. rbd_seqonly.txt), one per "
-             "cluster/slurm/evaluate/diagnose_conditioning_*.sh run.",
+             "cluster/slurm/diagnose/diagnose_conditioning_*.sh run.",
     )
     parser.add_argument(
         "--out_dir",

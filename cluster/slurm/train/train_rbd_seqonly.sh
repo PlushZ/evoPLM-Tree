@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-#SBATCH --job-name=evoplm-train-rbd-treeaware
-#SBATCH -o logs/train_rbd_treeaware.out
-#SBATCH -e logs/train_rbd_treeaware.err
+# GPU job (requests 1 GPU via --gres=gpu:1; CPU-only launchers elsewhere in cluster/slurm/ use -p cpu-single).
+#SBATCH --job-name=evoplm-train-rbd-seqonly
+#SBATCH -o logs/train_rbd_seqonly.out
+#SBATCH -e logs/train_rbd_seqonly.err
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=24G
@@ -19,5 +20,4 @@ python scripts/train_prefix_lm.py \
   --tokenizer_json configs/protein_tree_tokenizer.json \
   --mask_prob 0.10 --span_len 3 \
   --train_bs 32 --eval_bs 32 \
-  --out_root models/treeaware \
-  --use_tree_tokens
+  --out_root models/seqonly
