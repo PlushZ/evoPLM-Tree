@@ -18,12 +18,12 @@ mkdir -p logs
 python scripts/dms/plot_weighted_enrichment.py \
   --metrics_csv results/dms/metrics_summary_all_datasets.csv \
   --out_dir results/dms/plots \
-  --out_name dms_weighted_enrichment_treeaware.png \
+  --out_name dms_weighted_enrichment_treeaware \
   --model treeaware
 
 # Uncomment to also plot the seq-only model:
 # python scripts/dms/plot_weighted_enrichment.py \
 #   --metrics_csv results/dms/metrics_summary_all_datasets.csv \
 #   --out_dir results/dms/plots \
-#   --out_name dms_weighted_enrichment_seqonly.png \
+#   --out_name dms_weighted_enrichment_seqonly \
 #   --model seqonly

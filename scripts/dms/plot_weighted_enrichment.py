@@ -2,10 +2,12 @@
 import argparse
 from pathlib import Path
 
-import matplotlib
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
+
+from scripts.figures import _plos_export as plos
+
+BAR_COLOR = "#0072B2"
 
 
 def parse_args() -> argparse.Namespace:
@@ -22,8 +24,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--out_name",
-        default="dms_weighted_enrichment.png",
-        help="Output figure filename.",
+        default="dms_weighted_enrichment_treeaware",
+        help="Output figure stem (no extension); png/pdf/tiff/eps are all written.",
     )
     parser.add_argument(
         "--model",
@@ -31,6 +33,7 @@ def parse_args() -> argparse.Namespace:
         choices=["seqonly", "treeaware"],
         help="Which model to plot.",
     )
+    parser.add_argument("--dpi", type=int, default=plos.DPI)
     return parser.parse_args()
 
 
@@ -40,8 +43,8 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     dataset_labels = {
-        "urn_mavedb_00000670-a-1": "RBD-ACE2 binding\n(urn:mavedb:00000670-a-1)",
-        "urn_mavedb_00000671-a-1": "RBD expression\n(urn:mavedb:00000671-a-1)",
+        "urn_mavedb_00000670-a-1": "ACE2 binding",
+        "urn_mavedb_00000671-a-1": "RBD expression",
     }
 
     df = pd.read_csv(args.metrics_csv)
@@ -53,58 +56,36 @@ def main() -> None:
     if df.empty:
         raise ValueError("No rows found after filtering dataset IDs/model.")
 
-    values = df["weighted_enrichment_vs_background"].values
-    labels = df["dataset_label"].values
+    fold = df["weighted_enrichment_vs_background"].to_numpy()
+    pct_excess = (fold - 1.0) * 100.0
+    labels = df["dataset_label"].to_numpy()
+
     plt.style.use("seaborn-v0_8-whitegrid")
-    fig, ax = plt.subplots(figsize=(7, 4.5), dpi=150)
-    bars = ax.bar(
-        labels,
-        values,
-        color=["#4c78a8", "#72b7b2"],
-        edgecolor="#3a3a3a",
-        linewidth=0.5,
-    )
+    plos.apply_rcparams()  
 
-    ax.axhline(
-        1.0,
-        linestyle="--",
-        color="#444444",
-        linewidth=1.2,
-        label="Random expectation (baseline = 1.0)",
-    )
+    fig, ax = plt.subplots(figsize=(3.4, 1.9))
+    ax.grid(axis="y", visible=False)
+    bars = ax.barh(labels, pct_excess, color=BAR_COLOR, edgecolor="#3a3a3a", linewidth=0.5, height=0.55)
+    ax.invert_yaxis() 
 
-    for bar, value in zip(bars, values):
+    for bar, f in zip(bars, fold):
         ax.text(
-            bar.get_x() + bar.get_width() / 2,
-            value + 0.02,
-            f"{value:.2f}x",
-            ha="center",
-            va="bottom",
-            fontsize=10,
+            bar.get_width() + max(pct_excess) * 0.05,
+            bar.get_y() + bar.get_height() / 2,
+            f"{f:.2f}-fold",
+            ha="left", va="center", fontsize=8.5,
         )
 
-    ax.set_ylabel("Weighted enrichment", fontsize=12)
-    ax.set_xlabel("")
-    #ax.set_title(
-    #    "EvoPLM enrichment for tolerated mutations\nBA.2 RBD deep mutational scanning",
-    #    fontsize=13,
-    #    pad=10,
-    #)
-    ax.set_ylim(bottom=0.0, top=max(values) + 0.12)
-    ax.legend(
-        loc="lower center",
-        bbox_to_anchor=(0.5, 0.02),
-        frameon=True,
-        fancybox=True,
-        framealpha=0.9,
-    )
-    plt.setp(ax.get_xticklabels(), rotation=0, ha="center")
+    ax.set_xlim(left=0, right=max(pct_excess) * 1.75)
+    ax.set_xlabel("Weighted enrichment above\nrandom allocation (%)", fontsize=9)
+    ax.tick_params(axis="both", labelsize=9)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
     fig.tight_layout()
 
-    out_path = out_dir / args.out_name
-    fig.savefig(out_path, dpi=300)
+    out_stem = out_dir / args.out_name
+    plos.save_all_formats(fig, out_stem, args.dpi)
     plt.close(fig)
-    print(f"[ok] Saved figure: {out_path}")
 
 
 if __name__ == "__main__":

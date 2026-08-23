@@ -5,9 +5,13 @@ from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 
+import _plos_export as plos
+
 
 MUTATION_BINS = [0, 1, 2, 3, 5, 10, 20]
 MUTATION_BIN_LABELS = ["1", "2", "3", "4–5", "6–10", "11–20"]
+
+LINE_COLOR = "#0072B2"
 
 
 def parse_args() -> argparse.Namespace:
@@ -20,12 +24,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--out_dir",
         default="results/generation/split1/plots",
-        help="Directory where PNG plots will be written.",
+        help="Directory where plots will be written.",
+    )
+    parser.add_argument(
+        "--dpi",
+        type=int,
+        default=plos.DPI,
+        help="Raster resolution for the PNG/TIFF outputs (PLOS requires 300-600 dpi).",
     )
     return parser.parse_args()
 
 
-def plot_csv(csv_path: Path, out_dir: Path) -> None:
+def plot_csv(csv_path: Path, out_dir: Path, dpi: int) -> None:
     df = pd.read_csv(csv_path)
 
     required_cols = {"recovered_mut_count", "true_mut_count"}
@@ -44,11 +54,13 @@ def plot_csv(csv_path: Path, out_dir: Path) -> None:
     )
 
     plt.style.use("seaborn-v0_8-whitegrid")
-    fig, ax = plt.subplots(figsize=(7, 4.5), dpi=150)
+    plos.apply_rcparams()  
+
+    fig, ax = plt.subplots(figsize=(3.5, 3.5))
     ax.plot(
         agg["mut_bin"].astype(str),
         agg["mean_recovery"],
-        color="#4c78a8",
+        color=LINE_COLOR,
         linewidth=2.2,
         marker="o",
         markersize=5.5,
@@ -72,15 +84,16 @@ def plot_csv(csv_path: Path, out_dir: Path) -> None:
                 },
             )
 
-    ax.set_xlabel("Observed amino-acid mutation count (evolutionary distance)")
-    ax.set_ylabel("Mean exact mutation recovery rate")
-    plt.setp(ax.get_xticklabels(), rotation=20, ha="right")
+    ax.margins(x=0.08)
+    ax.set_xlabel("Observed amino-acid mutation count\n(evolutionary distance)", fontsize=10.5)
+    ax.set_ylabel("Mean exact mutation recovery rate", fontsize=10.5)
+    ax.tick_params(axis="both", labelsize=9.5)
+    plt.setp(ax.get_xticklabels(), rotation=0, ha="center")
     fig.tight_layout()
 
-    out_path = out_dir / f"{csv_path.stem}_recovery_vs_distance.png"
-    fig.savefig(out_path, dpi=220)
+    out_stem = out_dir / f"{csv_path.stem}_recovery_vs_distance"
+    plos.save_all_formats(fig, out_stem, dpi)
     plt.close(fig)
-    print(f"[ok] {csv_path} -> {out_path}")
 
 
 def main() -> None:
@@ -93,7 +106,7 @@ def main() -> None:
         raise FileNotFoundError(f"No files matched: {args.csv_glob}")
 
     for csv_path in csv_files:
-        plot_csv(csv_path, out_dir)
+        plot_csv(csv_path, out_dir, args.dpi)
 
 
 if __name__ == "__main__":
