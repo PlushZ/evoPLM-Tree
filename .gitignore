@@ -5,3 +5,25 @@ __pycache__/
 logs/*
 !logs/.gitkeep
 *.egg-info/
+
+# Local working notes (not for publication)
+review/
+
+# Large inputs linked in by cluster/setup_data_links.sh — never committed.
+# READMEs and small committed configs in these directories are kept explicitly.
+data/trajectories/*
+!data/trajectories/README.md
+data/processed/*
+!data/processed/README.md
+!data/processed/spike_aa/
+data/processed/spike_aa/*
+!data/processed/spike_aa/splits/
+data/processed/spike_aa/splits/*
+!data/processed/spike_aa/splits/*.csv
+data/usher/*
+!data/usher/README.md
+models/*
+!models/README.md
+
+# Machine-local conda env names (see cluster/env.local.sh header)
+cluster/env.local.sh
