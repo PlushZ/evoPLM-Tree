@@ -13,7 +13,8 @@ set -euo pipefail
 
 export PATH="$HOME/bin:/usr/bin:/bin"
 source "$HOME/miniconda/etc/profile.d/conda.sh"
-conda activate evoplm-bte
+[[ -f cluster/env.local.sh ]] && source cluster/env.local.sh
+conda activate "${CONDA_ENV_BTE:-evoplm-bte}"
 export LD_LIBRARY_PATH="${CONDA_PREFIX}/lib:${LD_LIBRARY_PATH:-}"
 
 python scripts/preprocessing/11_gen_trajectories_tree_aware.py \

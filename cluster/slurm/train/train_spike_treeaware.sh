@@ -12,7 +12,8 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "$REPO_ROOT"
 source "$HOME/miniconda/etc/profile.d/conda.sh"
-conda activate evoplm
+[[ -f cluster/env.local.sh ]] && source cluster/env.local.sh
+conda activate "${CONDA_ENV:-evoplm}"
 mkdir -p logs
 python scripts/train_prefix_lm.py \
   --task spike --split split1 \

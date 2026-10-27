@@ -92,11 +92,49 @@ def main():
     ap.add_argument("--delta_nt_mutcount", type=int, default=None)
     ap.add_argument("--depth_t", type=int, default=None)
     ap.add_argument("--pt_t", type=int, default=None)
+    ap.add_argument(
+        "--allow_masked_tree_features",
+        action="store_true",
+        help="Permit --use_tree_tokens with unset feature values (emits [MASK_TREE]). "
+             "Off by default: an unset value silently removes the tree conditioning.",
+    )
+    ap.add_argument(
+        "--expected_len",
+        type=int,
+        default=None,
+        help="Assert the ancestor translates to exactly this many residues. Use the "
+             "window the model was trained on (223 for RBD, spike 319-541).",
+    )
+    ap.add_argument(
+        "--site_offset",
+        type=int,
+        default=0,
+        help="Added to the 1-based model position to produce the emitted 'site'. "
+             "Use to express sites in assay coordinates, e.g. -12 maps model "
+             "position 13 (spike 331) to assay site 1.",
+    )
     ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     ap.add_argument("--out_csv", default="mutation_probs.csv")
     args = ap.parse_args()
 
     seq_aa = normalize_input_sequence(args.ancestor_seq, args.seq_type)
+
+    if args.expected_len is not None and len(seq_aa) != args.expected_len:
+        raise ValueError(
+            f"Ancestor is {len(seq_aa)} aa but --expected_len is {args.expected_len}. "
+            "This model uses learned absolute positional embeddings, so a sequence of "
+            "the wrong length shifts every residue out of its trained frame."
+        )
+
+    if args.use_tree_tokens:
+        unset = [k for k, v in tree_feature_dict(args).items() if v is None]
+        if unset and not args.allow_masked_tree_features:
+            raise ValueError(
+                f"--use_tree_tokens was given but these features are unset: {unset}. "
+                "They would be encoded as [MASK_TREE], leaving the run with no tree "
+                "conditioning at all. Supply values, or pass "
+                "--allow_masked_tree_features if that is genuinely intended."
+            )
 
     tokenizer = ProteinTreeTokenizer.load(args.tokenizer_json)
     model = BertLMHeadModel.from_pretrained(args.model_dir).to(args.device)
@@ -128,7 +166,8 @@ def main():
             token_id = int(tokenizer.token_to_id[aa])
             records.append(
                 {
-                    "site": i + 1,
+                    "site": i + 1 + args.site_offset,
+                    "model_site": i + 1,
                     "wt": wt,
                     "mut": aa,
                     "prob": float(probs[pred_pos, token_id].item()),
@@ -137,12 +176,20 @@ def main():
                 }
             )
 
-    fieldnames = ["site", "wt", "mut", "prob", "model_dir", "use_tree_tokens"]
+    fieldnames = ["site", "model_site", "wt", "mut", "prob", "model_dir", "use_tree_tokens"]
     with open(args.out_csv, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(records)
     print(f"[INFO] Input interpreted as AA length: {len(seq_aa)}")
+    if args.use_tree_tokens:
+        feats = tree_feature_dict(args)
+        shown = ", ".join(f"{k}={tokenizer.tree_token(k, feats[k])}" for k in TREE_FEATURE_ORDER)
+        print(f"[INFO] Tree tokens: {shown}")
+    else:
+        print("[INFO] Tree tokens: none (sequence-only input)")
+    sites = [r["site"] for r in records]
+    print(f"[INFO] Emitted site range: {min(sites)}..{max(sites)} (offset {args.site_offset:+d})")
     print(f"[INFO] Saved mutation probabilities -> {args.out_csv}")
 
 

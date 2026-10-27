@@ -31,6 +31,20 @@ def analyze_one_model(
 
     merged = probs_df.merge(dms_df, on=["site", "wt", "mut"], how="inner")
 
+    # The merge is an inner join on (site, wt, mut), so a site-numbering mismatch
+    # between the probability table and the assay drops rows silently instead of
+    # failing. Require that nearly every assayed substitution found a partner.
+    n_assay_nonwt = int((dms_df["mut"] != dms_df["wt"]).sum())
+    n_matched_nonwt = int((merged["mut"] != merged["wt"]).sum())
+    coverage = n_matched_nonwt / n_assay_nonwt if n_assay_nonwt else 0.0
+    if coverage < 0.99:
+        raise ValueError(
+            f"[{model_name}] Only {n_matched_nonwt}/{n_assay_nonwt} "
+            f"({coverage:.1%}) of assayed substitutions matched the probability "
+            "table. This usually means the two use different site numbering — "
+            "check --site_offset in infer_mutation_probabilities.py."
+        )
+
     # Safety: exclude WT-equivalent rows from all metrics.
     merged = merged.loc[merged["mut"] != merged["wt"]].copy()
     merged["prob"] = pd.to_numeric(merged["prob"], errors="coerce")

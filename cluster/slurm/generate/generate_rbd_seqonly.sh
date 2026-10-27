@@ -12,7 +12,8 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "$REPO_ROOT"
 source "$HOME/miniconda/etc/profile.d/conda.sh"
-conda activate evoplm
+[[ -f cluster/env.local.sh ]] && source cluster/env.local.sh
+conda activate "${CONDA_ENV:-evoplm}"
 mkdir -p logs
 python scripts/generate_sequences.py \
   --model_dir models/seqonly/rbd/split1/maxT1024_tree0_maskp0.1_span3/final \
