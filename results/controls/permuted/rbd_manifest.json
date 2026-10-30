@@ -1,0 +1,34 @@
+{
+  "reference": {
+    "path": "results/controls/permuted/rbd_reference.parquet",
+    "mean_perturb_distance": 0.0
+  },
+  "source_within_lineage": {
+    "path": "results/controls/permuted/rbd_source_within_lineage.parquet",
+    "mean_perturb_distance": 0.75390625,
+    "median_perturb_distance": 0.0,
+    "frac_unchanged": 0.564453125
+  },
+  "source_across_lineage": {
+    "path": "results/controls/permuted/rbd_source_across_lineage.parquet",
+    "mean_perturb_distance": 7.01171875,
+    "median_perturb_distance": 4.0,
+    "frac_unchanged": 0.044921875
+  },
+  "source_global": {
+    "path": "results/controls/permuted/rbd_source_global.parquet",
+    "mean_perturb_distance": 6.49609375,
+    "median_perturb_distance": 4.0,
+    "frac_unchanged": 0.056640625
+  },
+  "tree_joint": {
+    "path": "results/controls/permuted/rbd_tree_joint.parquet",
+    "mean_features_changed": 3.556640625,
+    "frac_unchanged": 0.001953125
+  },
+  "tree_independent": {
+    "path": "results/controls/permuted/rbd_tree_independent.parquet",
+    "mean_features_changed": 3.5390625,
+    "frac_unchanged": 0.0
+  }
+}
