@@ -1,0 +1,34 @@
+{
+  "reference": {
+    "path": "results/controls/permuted/spike_reference.parquet",
+    "mean_perturb_distance": 0.0
+  },
+  "source_within_lineage": {
+    "path": "results/controls/permuted/spike_source_within_lineage.parquet",
+    "mean_perturb_distance": 1.650390625,
+    "median_perturb_distance": 2.0,
+    "frac_unchanged": 0.400390625
+  },
+  "source_across_lineage": {
+    "path": "results/controls/permuted/spike_source_across_lineage.parquet",
+    "mean_perturb_distance": 14.029296875,
+    "median_perturb_distance": 7.0,
+    "frac_unchanged": 0.001953125
+  },
+  "source_global": {
+    "path": "results/controls/permuted/spike_source_global.parquet",
+    "mean_perturb_distance": 13.693359375,
+    "median_perturb_distance": 7.0,
+    "frac_unchanged": 0.005859375
+  },
+  "tree_joint": {
+    "path": "results/controls/permuted/spike_tree_joint.parquet",
+    "mean_features_changed": 3.484375,
+    "frac_unchanged": 0.001953125
+  },
+  "tree_independent": {
+    "path": "results/controls/permuted/spike_tree_independent.parquet",
+    "mean_features_changed": 3.4921875,
+    "frac_unchanged": 0.001953125
+  }
+}
