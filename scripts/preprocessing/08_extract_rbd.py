@@ -11,10 +11,26 @@ print(f"Loading {in_path} ...")
 df = pd.read_parquet(in_path)
 print("Rows:", len(df))
 
+# === Strip the terminal stop codon ===
+# Nextclade's translated spike carries a trailing '*', so spike_aa is 1274
+# characters for a 1273-residue protein. The tokenizer has no '*' and maps any
+# unknown character to 'X' (src/evoplm/tokenizer.py), so the model learns to
+# emit X at the final position while the observed sequence keeps '*' — which
+# registers as a mutation in nearly every full-spike pair and shows up as a
+# spurious hotspot at the last residue. Removing it here keeps generated and
+# observed sequences directly comparable and drops a token that carries no
+# amino-acid identity.
+n_stop = df["spike_aa"].str.endswith("*").sum()
+df["spike_aa"] = df["spike_aa"].str.replace(r"\*$", "", regex=True)
+print(f"Stripped terminal '*' from {n_stop:,} / {len(df):,} spike sequences")
+print("Spike length after stripping:", df["spike_aa"].str.len().value_counts().head(3).to_dict())
+
 # === Add RBD column ===
-# Spike AA length ~1273 aa
+# Spike AA length 1273 aa (after stripping the stop codon)
 # RBD is aa 319–541 (inclusive, 1-based numbering)
 # -> Python slice [318:541] (0-based, end exclusive)
+# The stop sits at index 1273, so removing it leaves this slice unchanged and
+# the RBD sequences identical to previous runs.
 df["rbd_aa"] = df["spike_aa"].str.slice(318, 541)
 
 # Count unknown residues ("X") in RBD

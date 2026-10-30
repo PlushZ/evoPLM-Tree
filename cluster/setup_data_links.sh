@@ -16,6 +16,33 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DATA_ROOT="${EVOPLM_DATA_ROOT:-$(cd "$REPO_ROOT/.." && pwd)/evoPLM}"
 
+# Some linked paths are pipeline OUTPUTS, not inputs: steps 10, 11 and 12 write
+# to them. Writing through a symlink would overwrite the originals in the
+# working tree, so clear those links before re-running preprocessing.
+#   bash cluster/setup_data_links.sh --unlink-outputs
+OUTPUT_LINKS=(
+  "$REPO_ROOT/data/processed/spike_aa/splits/split1_train_first3Omi2laterOmi.with_mat.parquet"
+  "$REPO_ROOT/data/processed/spike_aa/splits/split1_test_first3Omi2laterOmi.with_mat.parquet"
+  "$REPO_ROOT/data/trajectories/split1_train_first3Omi2laterOmi_pairs__rbd_t_ne_rbd_t1__delta_nt_mutcount_ge_1.parquet"
+  "$REPO_ROOT/data/trajectories/split1_test_first3Omi2laterOmi_pairs__rbd_t_ne_rbd_t1__delta_nt_mutcount_ge_1.parquet"
+  "$REPO_ROOT/data/trajectories/split1_train_first3Omi2laterOmi_pairs__spike_t_ne_spike_t1__delta_nt_mutcount_ge_1.parquet"
+  "$REPO_ROOT/data/trajectories/split1_test_first3Omi2laterOmi_pairs__spike_t_ne_spike_t1__delta_nt_mutcount_ge_1.parquet"
+)
+
+if [[ "${1:-}" == "--unlink-outputs" ]]; then
+  echo "[INFO] clearing pipeline-output links so steps 10-12 write real files"
+  n=0
+  for p in "${OUTPUT_LINKS[@]}"; do
+    if [[ -L "$p" ]]; then
+      rm "$p"; echo "[UNLINK] ${p#$REPO_ROOT/}"; n=$((n + 1))
+    elif [[ -e "$p" ]]; then
+      echo "[KEEP  ] ${p#$REPO_ROOT/} (a real file, left alone)"
+    fi
+  done
+  echo "[DONE ] $n link(s) removed. Originals remain under $DATA_ROOT."
+  exit 0
+fi
+
 echo "[INFO] repo root : $REPO_ROOT"
 echo "[INFO] data root : $DATA_ROOT"
 
@@ -79,6 +106,14 @@ link "$DATA_ROOT/models_fulldata/prefixlm_seqonly_filtered"   "$REPO_ROOT/models
 # ---------------------------------------------------------------------------
 link "$DATA_ROOT/data/processed/spike_aa/trajectories" "$REPO_ROOT/data/processed/spike_aa/trajectories_unfiltered"
 link "$DATA_ROOT/data/processed/spike_aa/spike.parquet" "$REPO_ROOT/data/processed/spike_aa/spike.parquet"
+
+# Step 08 reads spike_nodup_location_coldate.parquet. Only spike.parquet
+# survives in the working tree, and it is that same table (1,886,819 rows,
+# already carrying dup_count and rbd_aa), so point step 08's input at it.
+# Re-running 08 over it is idempotent apart from stripping the stop codon:
+# the RBD slice [318:541] does not reach index 1273 where the '*' sits.
+link "$DATA_ROOT/data/processed/spike_aa/spike.parquet" \
+     "$REPO_ROOT/data/processed/spike_aa/spike_nodup_location_coldate.parquet"
 
 SPLIT_SRC="$DATA_ROOT/data/processed/spike_aa/splits"
 for f in split1_train_first3Omi2laterOmi.with_mat.parquet \

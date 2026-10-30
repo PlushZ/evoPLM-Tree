@@ -171,10 +171,12 @@ def gen_pairs_single(tree: MATree,
                      max_pairs_per_desc: int,
                      max_delta_edges: int,
                      out_path: str,
-                     label: str):
+                     label: str,
+                     require_date_order: bool = True):
 
     rep_map = build_rep_map(tree, recs, max_up=max_delta_edges)
     rows = []
+    n_date_inverted = 0
 
     for v_strain, v in tqdm(recs.items(), desc=f"{label} pairs"):
         v_node = get_node(tree, v_strain)
@@ -208,6 +210,15 @@ def gen_pairs_single(tree: MATree,
                 continue
             if pt_u > pt_v:
                 continue
+            # Root-to-tip pseudotime orders the pair mutationally but not in
+            # time: u is the nearest observed leaf under the common ancestor,
+            # i.e. a cousin of v rather than its ancestor, so nothing yet stops
+            # u being collected after v. About a quarter of pairs were ordered
+            # that way. Require the descendant to be sampled no earlier than
+            # the source as well.
+            if require_date_order and pd.notna(u.date) and pd.notna(v.date) and u.date > v.date:
+                n_date_inverted += 1
+                continue
 
             rows.append(make_pair(u, v, k, delta_edges, depth_u, depth_v, pt_u, pt_v))
             emitted += 1
@@ -216,6 +227,11 @@ def gen_pairs_single(tree: MATree,
     df = pd.DataFrame(rows)
     df.to_parquet(out_path, index=False)
     print(f"[INFO] {label} pairs: {len(df):,} -> {out_path}")
+    if require_date_order:
+        total = len(df) + n_date_inverted
+        pct = 100.0 * n_date_inverted / total if total else 0.0
+        print(f"[INFO] {label}: dropped {n_date_inverted:,} date-inverted candidate pairs "
+              f"({pct:.1f}% of otherwise-valid pairs; descendant collected before source)")
 
 
 def main():
@@ -227,6 +243,13 @@ def main():
     ap.add_argument("--max_test_pairs_per_desc", type=int, default=2)
     ap.add_argument("--max_delta_edges", type=int, default=512)
     ap.add_argument("--representative", default="max_dup", choices=["max_dup","latest_date","earliest_date"])
+    ap.add_argument(
+        "--allow_date_inverted",
+        action="store_true",
+        help="Keep pairs whose descendant was collected before the source. Off by "
+             "default: pseudotime orders a pair mutationally but not in time, and "
+             "the source is a cousin leaf rather than a true ancestor.",
+    )
     args = ap.parse_args()
 
     cfg = pd.read_csv(args.config_csv)
@@ -265,6 +288,7 @@ def main():
             max_delta_edges=args.max_delta_edges,
             out_path=out_path,
             label=label,
+            require_date_order=not args.allow_date_inverted,
         )
 
 
